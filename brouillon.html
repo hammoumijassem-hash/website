@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutti a tavola</title>
+    <style>
+        html {
+            scroll-behavior: smooth;
+            background-color: #ffefef;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 1rem;
+            background: transparent;
+            color: #3b2a20;
+            line-height: 1.5;
+        }
+
+        /* Vidéo en fond d'écran */
+        #video-fond {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+
+        /* Barre de navigation */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #ffefef;
+            border: 3px solid #b8893b;
+            border-radius: 12px;
+            box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.25);
+            padding: 0.8rem;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        header {
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+
+        h1 {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 3rem;
+            color: black;
+            text-align: center;
+            margin: 0;
+        }
+
+        .slogan {
+            font-style: italic;
+            color: #340000;
+            text-align: center;
+        }
+
+        /* Badge ouvert / fermé */
+        #statut {
+            display: inline-block;
+            padding: 0.3rem 0.9rem;
+            border-radius: 999px;
+            font-weight: bold;
+            background: white;
+            border: 2px solid #6b020d;
+        }
+        #statut.ouvert { color: #146b02; border-color: #146b02; }
+        #statut.ferme { color: #6b020d; }
+
+        h2 {
+            font-family: Georgia, "Times New Roman", serif;
+            color: rgb(31, 28, 28);
+            text-align: center;
+        }
+
+        h3, h4 { color: #6b020d; }
+
+        section {
+            background: rgba(255, 255, 255, 0.9);
+            border: 3px solid #6b020d;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0;
+            box-shadow: 6px 6px 15px rgba(0, 0, 0, 0.25);
+            scroll-margin-top: 5rem;
+        }
+
+        /* Barre de recherche */
+        #recherche {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0.6rem;
+            margin-bottom: 1rem;
+            border: 2px solid #b8893b;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        /* Boutons de filtre */
+        .filtres {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .filtres button {
+            font-weight: bold;
+            color: #6b020d;
+            background: white;
+            border: 2px solid #6b020d;
+            border-radius: 999px;
+            padding: 0.3rem 1rem;
+            cursor: pointer;
+        }
+        .filtres button.actif {
+            color: white;
+            background: #6b020d;
+        }
+
+        .plat {
+            border-bottom: 1px dashed #6b020d;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        .plat:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .plat h3 { margin-top: 0; }
+        .plat::after {
+            content: "";
+            display: block;
+            clear: both;
+        }
+
+        figure { margin: 0; }
+        figure img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        figcaption {
+            font-size: 0.85rem;
+            color: #555;
+            text-align: center;
+        }
+
+        .plat figure {
+            float: left;
+            width: 200px;
+            margin-right: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .prix {
+            text-align: right;
+            font-weight: bold;
+            color: #146b02;
+        }
+
+        .btn {
+            font-weight: bold;
+            color: white;
+            background: #6b020d;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+        }
+        .btn:hover { background: #8d0a18; }
+        .ajout { float: right; }
+
+        ol, ul { padding-left: 1.2rem; }
+
+        a {
+            color: #6b020d;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        a:hover {
+            color: #ffffff;
+            background-color: #6b020d;
+            text-decoration: underline;
+        }
+
+        /* Formulaire */
+        form { display: grid; gap: 0.8rem; }
+        form label { display: grid; gap: 0.2rem; font-weight: bold; }
+        form input, form select {
+            padding: 0.5rem;
+            border: 2px solid #b8893b;
+            border-radius: 8px;
+        }
+        #message-resa { font-weight: bold; color: #6b020d; }
+
+        footer {
+            text-align: center;
+            color: #7a5c48;
+            font-size: 0.9rem;
+            margin-top: 2rem;
+        }
+
+        /* Panier */
+        #panier-bouton {
+            position: fixed;
+            right: 1rem;
+            bottom: 1rem;
+            z-index: 20;
+        }
+        #panier {
+            position: fixed;
+            right: 1rem;
+            bottom: 4rem;
+            z-index: 20;
+            width: 280px;
+            background: white;
+            border: 3px solid #6b020d;
+            border-radius: 12px;
+            padding: 1rem;
+            display: none; /* caché au départ */
+        }
+
+        /* Boutons en bas à gauche */
+        #haut, #pause-video {
+            position: fixed;
+            left: 1rem;
+            z-index: 20;
+            width: 2.6rem;
+            height: 2.6rem;
+            border-radius: 50%;
+            padding: 0;
+        }
+        #haut { bottom: 1rem; display: none; }
+        #pause-video { bottom: 4.2rem; }
+
+        /* Mode sombre : actif quand le body a la classe "sombre" */
+        body.sombre { color: #f0e6e6; }
+        body.sombre nav { background-color: #2a1c1c; }
+        body.sombre section {
+            background: rgba(30, 20, 20, 0.92);
+            border-color: #b8893b;
+        }
+        body.sombre h1,
+        body.sombre h2 { color: white; }
+        body.sombre h3 { color: #ff9aa5; }
+        body.sombre .slogan { color: #ffd0d0; }
+        body.sombre figcaption { color: #cccccc; }
+        body.sombre .prix { color: #7be35f; }
+        body.sombre footer { color: #e0c9b5; }
+        body.sombre a { color: #ffb3bb; }
+        body.sombre a:hover { color: white; }
+    </style>
+</head>
+<body>
+    <video autoplay muted playsinline preload="auto" id="video-fond">
+        <source src="pizza.mp4" type="video/mp4">
+    </video>
+
+    <nav>
+        <a href="#accueil">Accueil</a>
+        <a href="#menu">Menu</a>
+        <a href="#galerie">Galerie</a>
+        <a href="#reservation">Réservation</a>
+        <a href="#infos">Plus d'info</a>
+    </nav>
+
+    <header>
+        <h1>Tutti a tavola</h1>
+        <p class="slogan">La vraie cuisine italienne, à partager en famille</p>
+        <span id="statut"></span>
+        <br><br>
+        <button id="bouton-sombre" class="btn">🌙 Mode sombre</button>
+    </header>
+
+    <section id="accueil">
+        <h2 id="salutation">Bienvenue sur la page Tutti a tavola !</h2>
+        <p>Découvrez la beauté de la cuisine italienne : pâtes fraîches faites chaque matin, pizzas cuites au feu de bois et produits venus directement d'Italie.</p>
+        <p>Installez-vous, servez-vous, et surtout partagez. Voici toutes les informations à ne pas manquer !</p>
+    </section>
+
+    <section id="menu">
+        <h2>Notre carte</h2>
+
+        <input type="text" id="recherche" placeholder="Rechercher un plat (ex : tomate, pizza...)">
+        <p id="aucun-resultat" style="display: none; text-align: center;">Aucun plat trouvé 😕</p>
+
+        <div class="filtres">
+            <button class="actif" data-filtre="tous">Tout</button>
+            <button data-filtre="pizza">Pizzas</button>
+            <button data-filtre="pates">Pâtes</button>
+            <button data-filtre="dessert">Desserts</button>
+        </div>
+
+        <article class="plat" data-categorie="pizza">
+            <h3>1. Pizza Margherita</h3>
+            <figure>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUuY2KblqylsFx4nepDRpCqhuRaCESzRvqfAocf4oPOg&s=10" alt="Pizza Margherita">
+                <figcaption>Notre Margherita</figcaption>
+            </figure>
+            <p>La pizza classique par excellence, cuite au feu de bois.</p>
+            <ol>
+                <li><strong>Ingrédients :</strong> sauce tomate, mozzarella fior di latte, basilic frais et huile d'olive</li>
+                <li><strong>Cuisson :</strong> four à bois, 90 secondes</li>
+                <li><strong>Accompagnement conseillé :</strong> une salade de roquette</li>
+            </ol>
+            <p class="prix">11 €</p>
+            <button class="btn ajout" data-nom="Pizza Margherita" data-prix="11">Ajouter au panier</button>
+        </article>
+
+        <article class="plat" data-categorie="pates">
+            <h3>2. Spaghetti alla carbonara</h3>
+            <figure>
+                <img src="spaghetti-carbonara.jpg" alt="Spaghetti alla carbonara">
+                <figcaption>Nos carbonara</figcaption>
+            </figure>
+            <p>La recette romaine, sans crème, comme en Italie.</p>
+            <ol>
+                <li><strong>Ingrédients :</strong> pâtes fraîches, guanciale, jaune d'œuf, pecorino et poivre noir</li>
+                <li><strong>Origine :</strong> Rome</li>
+            </ol>
+            <p class="prix">14 €</p>
+            <button class="btn ajout" data-nom="Spaghetti alla carbonara" data-prix="14">Ajouter au panier</button>
+        </article>
+
+        <article class="plat" data-categorie="pates">
+            <h3>3. Spaghetti all'italienne</h3>
+            <figure>
+                <img src="spaghetti-italienne.jpg" alt="Spaghetti all'italienne">
+                <figcaption>Nos spaghetti</figcaption>
+            </figure>
+            <p>Un grand classique simple et gourmand.</p>
+            <ol>
+                <li><strong>Ingrédients :</strong> spaghetti al dente, sauce tomate maison, basilic frais, ail et parmesan râpé</li>
+                <li><strong>Option :</strong> version végétarienne</li>
+            </ol>
+            <p class="prix">12 €</p>
+            <button class="btn ajout" data-nom="Spaghetti all'italienne" data-prix="12">Ajouter au panier</button>
+        </article>
+
+        <article class="plat" data-categorie="dessert">
+            <h3>4. Tiramisu maison</h3>
+            <figure>
+                <img src="tiramisu.jpg" alt="Tiramisu maison">
+                <figcaption>Notre tiramisu</figcaption>
+            </figure>
+            <p>Le dessert à partager (ou pas).</p>
+            <ol>
+                <li><strong>Ingrédients :</strong> mascarpone, café, biscuits imbibés et cacao amer</li>
+                <li><strong>Fabrication :</strong> préparé chaque jour sur place</li>
+            </ol>
+            <p class="prix">7 €</p>
+            <button class="btn ajout" data-nom="Tiramisu maison" data-prix="7">Ajouter au panier</button>
+        </article>
+    </section>
+
+    <section id="galerie">
+        <h2>Images de notre restaurant</h2>
+
+        <figure>
+            <img src="salle.jpg" alt="La salle du restaurant">
+            <figcaption>La salle de Tutti a tavola</figcaption>
+        </figure>
+
+        <figure>
+            <img src="four-a-bois.jpg" alt="Le four à bois">
+            <figcaption>Notre four à bois</figcaption>
+        </figure>
+    </section>
+
+    <section id="reservation">
+        <h2>Réservation</h2>
+        <p>Remplissez le formulaire : votre application e-mail s'ouvrira avec la demande prête à envoyer.</p>
+
+        <form id="form-resa">
+            <label>Nom
+                <input type="text" id="resa-nom" placeholder="Votre nom">
+            </label>
+            <label>Date
+                <input type="date" id="resa-date">
+            </label>
+            <label>Heure
+                <select id="resa-heure">
+                    <option>12h00</option>
+                    <option>12h30</option>
+                    <option>13h00</option>
+                    <option>13h30</option>
+                    <option>19h00</option>
+                    <option>19h30</option>
+                    <option>20h00</option>
+                    <option>20h30</option>
+                    <option>21h00</option>
+                    <option>21h30</option>
+                </select>
+            </label>
+            <label>Nombre de personnes
+                <input type="number" id="resa-personnes" value="2" min="1" max="12">
+            </label>
+            <button type="submit" class="btn">Réserver par e-mail</button>
+            <p id="message-resa"></p>
+        </form>
+
+        <p>Ou écrivez-nous : <a href="mailto:contact.tuttiatavola@gmail.com">contact.tuttiatavola@gmail.com</a></p>
+    </section>
+
+    <section id="infos">
+        <h2>Plus d'info</h2>
+        <ol>
+            <li><strong>Horaires :</strong> tous les jours, de 12h à 14h30 et de 19h à 23h</li>
+            <li><strong>Réservation :</strong> <a href="#reservation">voir la section réservation</a></li>
+            <li><strong>Menu complet :</strong> <a href="#menu">consulter la carte</a></li>
+        </ol>
+    </section>
+
+    <footer>
+        <p>© <span id="annee">2026</span> Tutti a tavola — Buon appetito !</p>
+    </footer>
+
+    <!-- Boutons flottants -->
+    <button id="pause-video" class="btn">⏸</button>
+    <button id="haut" class="btn">↑</button>
+    <button id="panier-bouton" class="btn">🛒 Panier (0)</button>
+
+    <div id="panier">
+        <h2>Votre commande</h2>
+        <ul id="panier-liste"></ul>
+        <p id="panier-total"></p>
+        <button id="panier-vider" class="btn">Vider le panier</button>
+    </div>
+
+    <script>
+        // ============ 1. Salutation selon l'heure ============
+        const maintenant = new Date();
+        const heure = maintenant.getHours();
+        const titreAccueil = document.getElementById("salutation");
+
+        if (heure >= 18) {
+            titreAccueil.textContent = "Buona sera et bienvenue chez Tutti a tavola !";
+        } else {
+            titreAccueil.textContent = "Buongiorno et bienvenue chez Tutti a tavola !";
+        }
+
+        // Année automatique dans le pied de page
+        document.getElementById("annee").textContent = maintenant.getFullYear();
+
+
+        // ============ 2. Ouvert ou fermé ? ============
+        // On compte en minutes depuis minuit :
+        // 12h = 720, 14h30 = 870, 19h = 1140, 23h = 1380
+        const statut = document.getElementById("statut");
+        const minutes = heure * 60 + maintenant.getMinutes();
+
+        if ((minutes >= 720 && minutes < 870) || (minutes >= 1140 && minutes < 1380)) {
+            statut.textContent = "● Ouvert maintenant";
+            statut.classList.add("ouvert");
+        } else {
+            statut.textContent = "● Fermé pour le moment";
+            statut.classList.add("ferme");
+        }
+
+
+        // ============ 3. Filtres du menu + barre de recherche ============
+        const boutonsFiltre = document.querySelectorAll(".filtres button");
+        const plats = document.querySelectorAll(".plat");
+        const champRecherche = document.getElementById("recherche");
+        const aucunResultat = document.getElementById("aucun-resultat");
+        let categorieActive = "tous"; // la catégorie choisie en ce moment
+
+        // Cette fonction affiche ou cache chaque plat
+        // selon la catégorie ET le texte tapé
+        function afficherPlats() {
+            const texte = champRecherche.value.toLowerCase();
+            let nombreAffiches = 0;
+
+            for (let i = 0; i < plats.length; i++) {
+                // On cherche dans le titre et dans les ingrédients
+                const titre = plats[i].querySelector("h3").textContent;
+                const ingredients = plats[i].querySelector("ol").textContent;
+                const contenu = (titre + " " + ingredients).toLowerCase();
+
+                const bonneCategorie = categorieActive === "tous" ||
+                    plats[i].getAttribute("data-categorie") === categorieActive;
+                const bonTexte = contenu.includes(texte);
+
+                if (bonneCategorie && bonTexte) {
+                    plats[i].style.display = "block";
+                    nombreAffiches = nombreAffiches + 1;
+                } else {
+                    plats[i].style.display = "none";
+                }
+            }
+
+            // Message si aucun plat ne correspond
+            if (nombreAffiches === 0) {
+                aucunResultat.style.display = "block";
+            } else {
+                aucunResultat.style.display = "none";
+            }
+        }
+
+        // Clic sur un bouton de filtre
+        for (let i = 0; i < boutonsFiltre.length; i++) {
+            boutonsFiltre[i].addEventListener("click", function () {
+                for (let j = 0; j < boutonsFiltre.length; j++) {
+                    boutonsFiltre[j].classList.remove("actif");
+                }
+                boutonsFiltre[i].classList.add("actif");
+                categorieActive = boutonsFiltre[i].getAttribute("data-filtre");
+                afficherPlats();
+            });
+        }
+
+        // À chaque lettre tapée dans la barre de recherche
+        champRecherche.addEventListener("input", afficherPlats);
+
+
+        // ============ 4. Panier ============
+        const panier = []; // la liste des plats choisis
+        const boutonPanier = document.getElementById("panier-bouton");
+        const zonePanier = document.getElementById("panier");
+        const listePanier = document.getElementById("panier-liste");
+        const totalPanier = document.getElementById("panier-total");
+        const boutonsAjout = document.querySelectorAll(".ajout");
+
+        function afficherPanier() {
+            listePanier.innerHTML = "";
+            let total = 0;
+
+            for (let i = 0; i < panier.length; i++) {
+                const ligne = document.createElement("li");
+                ligne.textContent = panier[i].nom + " - " + panier[i].prix + " €";
+                listePanier.appendChild(ligne);
+                total = total + panier[i].prix;
+            }
+
+            totalPanier.textContent = "Total : " + total + " €";
+            boutonPanier.textContent = "🛒 Panier (" + panier.length + ")";
+        }
+
+        for (let i = 0; i < boutonsAjout.length; i++) {
+            boutonsAjout[i].addEventListener("click", function () {
+                const nom = boutonsAjout[i].getAttribute("data-nom");
+                const prix = Number(boutonsAjout[i].getAttribute("data-prix"));
+                panier.push({ nom: nom, prix: prix });
+                afficherPanier();
+            });
+        }
+
+        // Ouvrir / fermer le panier
+        boutonPanier.addEventListener("click", function () {
+            if (zonePanier.style.display === "block") {
+                zonePanier.style.display = "none";
+            } else {
+                zonePanier.style.display = "block";
+            }
+        });
+
+        // Vider le panier
+        document.getElementById("panier-vider").addEventListener("click", function () {
+            panier.length = 0;
+            afficherPanier();
+        });
+
+        afficherPanier();
+
+
+        // ============ 5. Formulaire de réservation ============
+        const formulaire = document.getElementById("form-resa");
+        const message = document.getElementById("message-resa");
+
+        formulaire.addEventListener("submit", function (event) {
+            event.preventDefault(); // empêche la page de se recharger
+
+            const nom = document.getElementById("resa-nom").value;
+            const date = document.getElementById("resa-date").value;
+            const heureResa = document.getElementById("resa-heure").value;
+            const personnes = document.getElementById("resa-personnes").value;
+
+            if (nom === "") {
+                message.textContent = "Merci d'écrire votre nom.";
+            } else if (date === "") {
+                message.textContent = "Merci de choisir une date.";
+            } else {
+                const texte = "Bonjour, je souhaite réserver pour " + personnes +
+                    " personne(s) le " + date + " à " + heureResa + ". Nom : " + nom;
+                window.location.href = "mailto:contact@tutti-a-tavola.example?subject=" +
+                    encodeURIComponent("Réservation") + "&body=" + encodeURIComponent(texte);
+                message.textContent = "Votre application e-mail va s'ouvrir !";
+            }
+        });
+
+
+        // ============ 6. Bouton retour en haut ============
+        const boutonHaut = document.getElementById("haut");
+
+        window.addEventListener("scroll", function () {
+            if (window.scrollY > 400) {
+                boutonHaut.style.display = "block";
+            } else {
+                boutonHaut.style.display = "none";
+            }
+        });
+
+        boutonHaut.addEventListener("click", function () {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+
+
+        // ============ 7. Vidéo : pause / lecture + relance à la fin ============
+        const video = document.getElementById("video-fond");
+        const boutonVideo = document.getElementById("pause-video");
+
+        boutonVideo.addEventListener("click", function () {
+            if (video.paused) {
+                video.play();
+                boutonVideo.textContent = "⏸";
+            } else {
+                video.pause();
+                boutonVideo.textContent = "▶";
+            }
+        });
+
+        // Quand la vidéo se termine, on la relance depuis le début
+        video.addEventListener("ended", function () {
+            video.currentTime = 0;
+            video.play();
+        });
+
+
+        // ============ 8. Mode sombre ============
+        const boutonSombre = document.getElementById("bouton-sombre");
+
+        boutonSombre.addEventListener("click", function () {
+            document.body.classList.toggle("sombre");
+
+            if (document.body.classList.contains("sombre")) {
+                boutonSombre.textContent = "☀️ Mode clair";
+            } else {
+                boutonSombre.textContent = "🌙 Mode sombre";
+            }
+        });
+    </script>
+</body>
+</html>
